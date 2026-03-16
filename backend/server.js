@@ -2,7 +2,25 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const Database = require('better-sqlite3');
+
 const app = express();
+
+const db = new Database('webshop.db');  
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        price REAL NOT NULL,
+        description TEXT,
+        category TEXT,
+        image_path TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`);
+
+console.log('Database ready');
 
 //Middleware
 app.use(cors());
@@ -46,18 +64,57 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'Backend is working!' });
 });
 
-app.post('/api/upload', upload.single('image'), (req, res) => {
+// Route to handle product creation with image upload
+app.post('/api/products', upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    res.json({
-        message: 'File uploaded successfully',
-        filename: req.file.filename,
-        path: `/uploads/${req.file.filename}`,
-        size: req.file.size
-    });
+    const { name, price, description, category } = req.body;
+
+    if (!name || !price) {
+        return res.status(400).json({ error: 'Name and price are required' });
+    }
+
+    const imagePath = `/uploads/${req.file.filename}`;
+
+    try {
+        const insert = db.prepare(
+            `INSERT INTO products (name, price, description, category, image_path)
+             VALUES (?, ?, ?, ?, ?)`
+        );
+
+        const result = insert.run(name, price, description, category, imagePath);
+
+        res.status(201).json({
+            message: 'Product created successfully',
+            product: {
+                id: result.lastInsertRowid,
+                name,
+                price,
+                description,
+                category,
+                image_path: imagePath
+            }
+        });
+    } catch (error) {
+        console.error('Error inserting product:', error);
+        res.status(500).json({ error: 'Failed to create product' });
+    }
 });
+
+// Route to fetch all products  
+app.get('/api/products', (req, res) => {
+  try {
+    const products = db.prepare('SELECT * FROM products ORDER BY created_at DESC').all();
+    res.json(products);
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
+    
 
 const port = 3000;
 app.listen(port, () => {

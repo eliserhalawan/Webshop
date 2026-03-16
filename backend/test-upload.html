@@ -1,32 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Test File Upload</title>
+<title>Test Product Upload</title>
 </head>
 <body>
-  <h1>Test Product Image Upload</h1>
+  <h1>Add Product</h1>
   
-  <input type="file" id="fileInput" accept="image/*">
-  <button onclick="uploadFile()">Upload</button>
+  <label>Product Name:</label><br>
+  <input type="text" id="productName" placeholder="Nike Air Max"><br><br>
+  
+  <label>Price:</label><br>
+  <input type="number" id="productPrice" placeholder="99.99" step="0.01"><br><br>
+  
+  <label>Description:</label><br>
+  <textarea id="productDescription" placeholder="Product description..."></textarea><br><br>
+  
+  <label>Category:</label><br>
+  <input type="text" id="productCategory" placeholder="Shoes"><br><br>
+  
+  <label>Product Image:</label><br>
+  <input type="file" id="fileInput" accept="image/*"><br><br>
+  
+  <button onclick="addProduct()">Add Product</button>
   
   <div id="result"></div>
-  <div id="preview"></div>
+  <hr>
+  
+  <h2>All Products:</h2>
+  <button onclick="loadProducts()">Load Products</button>
+  <div id="products"></div>
 
   <script>
-    async function uploadFile() {
+    async function addProduct() {
       const fileInput = document.getElementById('fileInput');
       const file = fileInput.files[0];
+      const name = document.getElementById('productName').value;
+      const price = document.getElementById('productPrice').value;
+      const description = document.getElementById('productDescription').value;
+      const category = document.getElementById('productCategory').value;
       
-      if (!file) {
-        alert('Please select a file first!');
+      if (!file || !name || !price) {
+        alert('Please fill in name, price and select an image!');
         return;
       }
       
       const formData = new FormData();
       formData.append('image', file);
+      formData.append('name', name);
+      formData.append('price', price);
+      formData.append('description', description);
+      formData.append('category', category);
       
       try {
-        const response = await fetch('http://localhost:3000/api/upload', {
+        const response = await fetch('http://localhost:3000/api/products', {
           method: 'POST',
           body: formData
         });
@@ -34,20 +60,51 @@
         const data = await response.json();
         
         document.getElementById('result').innerHTML = `
-          <h3>Result:</h3>
+          <h3 style="color: green;">✅ Product Added!</h3>
           <pre>${JSON.stringify(data, null, 2)}</pre>
         `;
         
-        if (data.path) {
-          document.getElementById('preview').innerHTML = `
-            <h3>Uploaded Image:</h3>
-            <img src="http://localhost:3000${data.path}" style="max-width: 400px;">
-          `;
-        }
+        // Clear form
+        document.getElementById('productName').value = '';
+        document.getElementById('productPrice').value = '';
+        document.getElementById('productDescription').value = '';
+        document.getElementById('productCategory').value = '';
+        fileInput.value = '';
+        
+        // Reload products
+        loadProducts();
       } catch (error) {
         document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
       }
     }
+    
+    async function loadProducts() {
+      try {
+        const response = await fetch('http://localhost:3000/api/products');
+        const products = await response.json();
+        
+        if (products.length === 0) {
+          document.getElementById('products').innerHTML = '<p>No products yet!</p>';
+          return;
+        }
+        
+        const html = products.map(p => `
+          <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+            <img src="http://localhost:3000${p.image_path}" style="max-width: 200px;"><br>
+            <strong>${p.name}</strong> - €${p.price}<br>
+            ${p.description || ''}<br>
+            <small>Category: ${p.category || 'N/A'}</small>
+          </div>
+        `).join('');
+        
+        document.getElementById('products').innerHTML = html;
+      } catch (error) {
+        document.getElementById('products').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+      }
+    }
+    
+    // Load products on page load
+    loadProducts();
   </script>
 </body>
 </html>
