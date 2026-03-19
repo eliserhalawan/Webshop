@@ -114,7 +114,31 @@ app.get('/api/products', (req, res) => {
   }
 });
 
-    
+// Route to delete a product by ID
+app.delete('/api/products/:id', (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }       
+
+        db.prepare('DELETE FROM products WHERE id = ?').run(id);
+
+        const fs = require('fs');
+        const imagePath = './uploads/' + product.image_path.split('/').pop();
+        if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+        }
+        
+        res.json({ message: 'Product deleted successfully' });
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Failed to delete product' });
+    }
+});
 
 const port = 3000;
 app.listen(port, () => {
