@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { use } from "react";
 import { useState } from "react";
 
 export default function App() {
@@ -12,16 +11,53 @@ export default function App() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const response = await fetch("http://localhost:3000/api/products");
-      const data = await response.json();
-      console.log("Fetched products:", data);
-      setProducts(data);
-    };
+  const fetchProducts = async () => {
+    const response = await fetch("http://localhost:3000/api/products");
+    const data = await response.json();
+    console.log("Fetched products:", data);
+    setProducts(data);
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, []);
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+
+      if (!name || !price || !image) {
+        alert("Please fill in all required fields and upload an image.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', image);
+      formData.append('name', name);
+      formData.append('price', price);
+      formData.append('description', description);
+      formData.append('category', category);
+
+      try {
+        const response = await fetch("http://localhost:3000/api/products", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          setName('');
+          setPrice('');
+          setDescription('');
+          setCategory('');
+          setImage(null);
+          setPreview(null);
+          setShowForm(false);
+          fetchProducts();
+        }
+      } catch (error) {
+        console.error("Error adding product:", error);
+        alert("An error occurred while adding the product.");
+      }
+    };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
@@ -74,8 +110,8 @@ export default function App() {
       <div className="bg-white border-b border-gray-200 py-16">
         <div className="max-w-4xl mx-auto text-center px-4">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            Your marketplace for high-quality{" "}
-            <span className="text-blue-600">products</span>.
+            Your marketplace for your{" "} <br></br>
+            <span className="text-blue-600">all-day products</span>.
           </h1>
           <p className="text-gray-600 text-lg mb-8">
             Discover amazing products curated just for you.
@@ -90,7 +126,7 @@ export default function App() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50  flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
             <h2 className="text-2xl font-semibold mb-4">Add A New Product</h2>
             <div className="space-y-4">
               {/* Image uploads */}
@@ -179,11 +215,17 @@ export default function App() {
                   </div>
               </div>
 
+              <button
+                onClick={handleSubmit}
+                className="bg-blue-600 text-white px-6 py-3 mt-4 rounded-lg font-semibold hover:bg-blue-700 transition w-full"
+              >
+                Add Product
+              </button>
             <button
               onClick={() => setShowForm(false)}
-              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className=" absolute top-3 right-3 bg-red-500 text-white px-4 py-2 w-8 h-8 rounded-full hover:bg-red-700 items-center justify-center flex transition "
             >
-              Close
+              <span className="material-symbols-outlined">close</span>
             </button>
           </div>
         </div>
@@ -208,8 +250,8 @@ export default function App() {
                   className="w-full h-48 object-cover mb-4 rounded"
                 />
                 <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                <p className="text-gray-700 mb-2">${product.price}</p>
-                <p className="text-gray-600">{product.description}</p>
+                <p className="text-gray-700 mb-2">€{product.price}</p>
+                
               </div>
             ))}
           </div>
