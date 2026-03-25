@@ -22,6 +22,23 @@ export default function App() {
     fetchProducts();
   }, []);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+ 
+    try {
+      const response = await fetch(`http://localhost:3000/api/products/${id}`, {
+        method: "DELETE",
+      });
+ 
+      if (response.ok) {
+        fetchProducts();
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Something went wrong while deleting the product.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -300,6 +317,13 @@ export default function App() {
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                     <button className="bg-white text-gray-900 text-sm font-semibold px-5 py-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 translate-y-3 group-hover:translate-y-0">
                       Add to cart
+                    </button>
+                    <button
+                      onClick={(e) => { handleDelete(product.id); }}
+                      className="absolute top-3 right-3 bg-white text-red-500 text-sm font-semibold px-3 py-2 rounded-full shadow-lg hover:bg-red-500 hover:text-white transition-colors duration-200 translate-y-3 group-hover:translate-y-0"
+                      aria-label="Delete product"
+                    >
+                      🗑
                     </button>
                   </div>
                 </div>
