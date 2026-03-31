@@ -30,7 +30,7 @@ export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
             cart.map((item) => (
               <div key={item.id} className="flex items-center gap-4">
                 <img
-                  src={`http://localhost:3000/${item.image_path}`}
+                  src={`http://localhost:3000${item.image_path}`}
                   alt={item.name}
                   className="w-16 h-16 object-cover rounded"
                 />

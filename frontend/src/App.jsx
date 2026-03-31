@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import { useState } from "react";
+import ShoppingCart from "./Components/ShoppingCart";
 
 export default function App() {
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [showCart, setShowCart] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
@@ -38,6 +41,30 @@ export default function App() {
       alert("Something went wrong while deleting the product.");
     }
   };
+
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const cartTotal = cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,7 +127,9 @@ export default function App() {
               >
                 Add Product
               </button>
-              <button className="relative">
+              <button 
+              onClick={() => setShowCart(true)}
+              className="relative">
                 <svg
                   className="w-6 h-6 text-gray-600 hover:text-gray-900"
                   fill="none"
@@ -115,7 +144,7 @@ export default function App() {
                   />
                 </svg>
                 <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  0
+                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
                 </span>
               </button>
             </div>
@@ -315,7 +344,9 @@ export default function App() {
                   )}
                   {/* Quick-add overlay */}
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                    <button className="bg-white text-gray-900 text-sm font-semibold px-5 py-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 translate-y-3 group-hover:translate-y-0">
+                    <button 
+                    onClick={()=> addToCart(product)}
+                    className="bg-white text-gray-900 text-sm font-semibold px-5 py-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 translate-y-3 group-hover:translate-y-0">
                       Add to cart
                     </button>
                     <button
@@ -343,6 +374,7 @@ export default function App() {
                       €{Number(product.price).toFixed(2)}
                     </span>
                     <button
+                      onClick={()=> addToCart(product)}
                       className="w-8 h-8 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-full flex items-center justify-center transition-colors duration-200"
                       aria-label="Add to cart"
                     >
@@ -367,6 +399,14 @@ export default function App() {
           </div>
         )}
       </main>
+      {showCart && (
+        <ShoppingCart
+          cart={cart}
+          cartTotal={cartTotal}
+          onRemove={removeFromCart}
+          onClose={() => setShowCart(false)}
+        />
+      )}
     </div>
   );
 }
