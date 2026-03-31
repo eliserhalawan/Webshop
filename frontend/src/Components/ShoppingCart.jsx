@@ -1,23 +1,31 @@
-
 export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/50"
-           onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* Sidebar panel */}
       <div className="relative bg-white w-full max-w-sm h-full flex flex-col shadow-2xl">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-medium text-gray-900">Your Cart</h2>
-          <button 
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-700 text-xl font-bold">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-700 text-xl font-bold"
+          >
             <span className="sr-only">Close</span>
-            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="h-6 w-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -35,7 +43,9 @@ export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
                   className="w-16 h-16 object-cover rounded"
                 />
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900 text-sm">{item.name}</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {item.name}
+                  </p>
                   <p className="text-blue-600 font-bold text-sm">
                     €{(item.price * item.quantity).toFixed(2)}
                   </p>
@@ -44,10 +54,10 @@ export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
                 <button
                   onClick={() => onRemove(item.id)}
                   className="text-red-500 hover:text-red-700 text-sm font-medium"
-                  >
-                    🗑
-                  </button>
-         </div>
+                >
+                  🗑
+                </button>
+              </div>
             ))
           )}
         </div>
@@ -61,13 +71,12 @@ export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
                 €{cartTotal.toFixed(2)}
               </p>
             </div>
-            <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors"
-            >
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors">
               Proceed to Checkout
             </button>
           </div>
         )}
-      </div> 
-  </div>
-  );}
+      </div>
+    </div>
+  );
+}
