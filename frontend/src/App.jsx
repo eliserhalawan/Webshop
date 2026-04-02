@@ -1,15 +1,44 @@
-import { useEffect, useState } from "react";
-import Header from "./Components/Header";
-import Hero from "./Components/Hero";
-import ProductList from "./Components/Productlist";
-import AddProductModal from "./Components/Addproductmodal";
-import ShoppingCart from "./Components/ShoppingCart";
+import { use, useEffect, useState } from "react";
+import Header from "./components/Header";
+import Hero from "./components/Hero";
+import ProductList from "./components/ProductList";
+import AddProductModal from "./components/AddproductModal";
+import ShoppingCart from "./components/ShoppingCart";
+import LoginModal from "./components/LoginModal";
 
 export default function App() {
   const [products, setProducts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+
+  // ── Auth ─────────────────────────────────────────
+    useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch("http://localhost:3000/api/profile", {
+        headers: { Authorization: `Bearer ${token}` 
+      },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.user) setCurrentUser(data.user.username);
+          else localStorage.removeItem("token");
+        });
+    }
+  }, []);
+
+  const handleLoginSuccess = (username) => {
+    setCurrentUser(username);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setCurrentUser(null);
+  };
 
   // ── Products ──────────────────────────────────────────
   const fetchProducts = async () => {
@@ -64,11 +93,21 @@ export default function App() {
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
       <Header
         cart={cart}
+        currentUser={currentUser}
+        onOpenLogin={() => setShowLogin(true)}
         onAddProduct={() => setShowForm(true)}
         onOpenCart={() => setShowCart(true)}
+        onLogout={handleLogout}
       />
 
       <Hero />
+
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      )}
 
       {showForm && (
         <AddProductModal
