@@ -1,5 +1,5 @@
 export default function Header({ cart, currentUser, onAddProduct, onOpenCart, onOpenLogin, onLogout }) {
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = cart.length;
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">

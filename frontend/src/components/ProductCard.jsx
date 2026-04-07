@@ -49,7 +49,7 @@ export default function ProductCard({ product, onAddToCart, onDelete }) {
             €{Number(product.price).toFixed(2)}
           </span>
           <button
-            onClick={() => onAddToCart(product)}
+            onClick={() => onAddToCart(product.id)}
             className="w-8 h-8 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-full flex items-center justify-center transition-colors duration-200"
             aria-label="Add to cart"
           >

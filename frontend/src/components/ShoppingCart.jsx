@@ -47,9 +47,8 @@ export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
                     {item.name}
                   </p>
                   <p className="text-blue-600 font-bold text-sm">
-                    €{(item.price * item.quantity).toFixed(2)}
+                    €{(item.price).toFixed(2)}
                   </p>
-                  <p className="text-gray-500 text-sm">Qty: {item.quantity}</p>
                 </div>
                 <button
                   onClick={() => onRemove(item.id)}

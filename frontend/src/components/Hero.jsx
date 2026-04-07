@@ -4,7 +4,7 @@ export default function Hero() {
       <div className="max-w-4xl mx-auto text-center px-4">
         <h1 className="text-5xl font-bold text-gray-900 mb-4">
           Your marketplace for your <br />
-          <span className="text-blue-600">all-day products</span>.
+          <span className="bg-linear-to-r bg-clip-text text-transparent from-indigo-500 to-purple-500">all-day products</span>.
         </h1>
         <p className="text-gray-600 text-lg mb-8">
           Discover amazing products curated just for you.
@@ -16,7 +16,7 @@ export default function Hero() {
               behavior: "smooth",
             })
           }
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+          className="bg-linear-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-600 transition"
         >
           Browse Products
         </button>
