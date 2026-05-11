@@ -1,8 +1,8 @@
-import { lazy, Suspense } from "react";
 
-const ProductCard = lazy(() => import("./ProductCard"));
 
-export default function ProductList({ products, onAddToCart, onDelete }) {
+import ProductCard from "./ProductCard";
+
+export default function ProductList({ products, onAddToCart, onDelete, onSelectProduct }) {
   return (
     <main className="max-w-7xl mx-auto px-4 py-12">
       {/* Section header */}
@@ -40,7 +40,7 @@ export default function ProductList({ products, onAddToCart, onDelete }) {
           </p>
         </div>
       ) : (
-      <Suspense fallback={<div>Loading products...</div>}> 
+       
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
             <ProductCard
@@ -48,10 +48,11 @@ export default function ProductList({ products, onAddToCart, onDelete }) {
               product={product}
               onAddToCart={onAddToCart}
               onDelete={onDelete}
+              onSelectProduct={onSelectProduct}
             />
           ))}
         </div>
-      </Suspense>
+    
       )}
     </main>
   );

@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import ProductList from "./components/ProductList";
-import AddProductModal from "./components/AddproductModal";
+import AddProductModal from "./components/AddProductModal";
+import ProductModal from "./components/ProductModal";
 import ShoppingCart from "./components/ShoppingCart";
 import LoginModal from "./components/LoginModal";
 
@@ -13,6 +14,7 @@ export default function App() {
   const [showCart, setShowCart] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
 
   // ── Auth ─────────────────────────────────────────
@@ -151,6 +153,7 @@ export default function App() {
         products={products}
         onAddToCart={addToCart}
         onDelete={handleDelete}
+        onSelectProduct={setSelectedProduct}
       />
 
       {showCart && (
@@ -159,6 +162,14 @@ export default function App() {
           cartTotal={cartTotal}
           onRemove={removeFromCart}
           onClose={() => setShowCart(false)}
+        />
+      )}
+
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={addToCart}
         />
       )}
     </div>

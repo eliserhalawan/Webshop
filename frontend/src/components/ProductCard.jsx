@@ -1,6 +1,6 @@
-export default function ProductCard({ product, onAddToCart, onDelete }) {
+export default function ProductCard({ product, onAddToCart, onDelete, onSelectProduct }) {
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col">
+    <div onClick={() => onSelectProduct(product)} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col">
       {/* Image */}
       <div className="relative overflow-hidden bg-gray-100 aspect-square">
         <img
@@ -19,13 +19,13 @@ export default function ProductCard({ product, onAddToCart, onDelete }) {
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
           <button
-            onClick={() => onAddToCart(product)}
+            onClick={(e) => {e.stopPropagation(); onAddToCart(product);}}
             className="bg-white text-gray-900 text-sm font-semibold px-5 py-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 translate-y-3 group-hover:translate-y-0"
           >
             Add to cart
           </button>
           <button
-            onClick={() => onDelete(product.id)}
+            onClick={(e) => {e.stopPropagation(); onDelete(product.id);}}
             className="absolute top-3 right-3 bg-white text-red-500 text-sm px-3 py-2 rounded-full shadow-lg hover:bg-red-500 hover:text-white transition-colors duration-200"
             aria-label="Delete product"
           >
@@ -49,7 +49,7 @@ export default function ProductCard({ product, onAddToCart, onDelete }) {
             €{Number(product.price).toFixed(2)}
           </span>
           <button
-            onClick={() => onAddToCart(product.id)}
+            onClick={(e) => {e.stopPropagation(); onAddToCart(product.id);}}
             className="w-8 h-8 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-full flex items-center justify-center transition-colors duration-200"
             aria-label="Add to cart"
           >
