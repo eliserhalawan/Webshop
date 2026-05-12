@@ -16,6 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const db = new Database("webshop.db");
 
+// Products table and Users table
 db.exec(`
     CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,6 +36,7 @@ db.exec(`
   );
 `);
 
+// Cart items table
 db.exec(`
   CREATE TABLE IF NOT EXISTS cart_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,6 +44,32 @@ db.exec(`
     product_id INTEGER NOT NULL,
     added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+  )
+`);
+
+// Orders and order items tables
+db.exec(`
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    total REAL NOT NULL,
+    full_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    city TEXT NOT NULL,
+    postal_code TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS order_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    price REAL NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
   )
 `);
@@ -265,13 +293,17 @@ app.delete("/api/products/:id", (req, res) => {
 // fetch cart items for the logged-in user
 app.get("/api/cart", verifyToken, (req, res) => {
   try {
-    const items = db.prepare(`
+    const items = db
+      .prepare(
+        `
       SELECT cart_items.id, products.*
       FROM cart_items
       JOIN products ON cart_items.product_id = products.id
       WHERE cart_items.user_id = ?
       ORDER BY cart_items.added_at DESC
-    `).all(req.user.userId);
+    `,
+      )
+      .all(req.user.userId);
 
     res.json(items);
   } catch (err) {
@@ -284,30 +316,32 @@ app.get("/api/cart", verifyToken, (req, res) => {
 app.post("/api/cart/:productId", verifyToken, (req, res) => {
   const { productId } = req.params;
 
-try {
-  // Check if the product exists
-  const product = db.prepare("SELECT * FROM products WHERE id = ?").get(productId);
-  if (!product) {
-    return res.status(404).json({ error: "Product not found" });
+  try {
+    // Check if the product exists
+    const product = db
+      .prepare("SELECT * FROM products WHERE id = ?")
+      .get(productId);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Check if the product is already in the user's cart
+    const existing = db
+      .prepare("SELECT * FROM cart_items WHERE user_id = ? AND product_id = ?")
+      .get(req.user.userId, productId);
+    if (existing) {
+      return res.status(400).json({ error: "Product already in cart" });
+    }
+
+    db.prepare(
+      "INSERT INTO cart_items (user_id, product_id) VALUES (?, ?)",
+    ).run(req.user.userId, productId);
+
+    res.status(201).json({ message: "Product added to cart" });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Failed to add product to cart" });
   }
-
-  // Check if the product is already in the user's cart
-  const existing = db.prepare(
-    "SELECT * FROM cart_items WHERE user_id = ? AND product_id = ?"  
-  ).get(req.user.userId, productId);
-  if (existing) {
-    return res.status(400).json({ error: "Product already in cart" });
-  }
-
-  db.prepare(
-    "INSERT INTO cart_items (user_id, product_id) VALUES (?, ?)"
-  ).run(req.user.userId, productId);
-
-  res.status(201).json({ message: "Product added to cart" });
-} catch (err) {
-  console.error("Database error:", err);
-  res.status(500).json({ error: "Failed to add product to cart" });
-}
 });
 
 app.delete("/api/cart/:productId", verifyToken, (req, res) => {
@@ -315,7 +349,7 @@ app.delete("/api/cart/:productId", verifyToken, (req, res) => {
 
   try {
     db.prepare(
-      "DELETE FROM cart_items WHERE user_id = ? AND product_id = ?"
+      "DELETE FROM cart_items WHERE user_id = ? AND product_id = ?",
     ).run(req.user.userId, productId);
 
     res.json({ message: "Product removed from cart" });
