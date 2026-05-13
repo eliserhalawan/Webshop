@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import ProductList from "./components/ProductList";
@@ -15,7 +16,6 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
 
   // ── Auth ─────────────────────────────────────────
   useEffect(() => {
@@ -84,19 +84,23 @@ export default function App() {
     setCart(data);
   };
 
-  //add a product to the cart 
+  //add a product to the cart
   const addToCart = async (productOrId) => {
-    const productId = typeof productOrId === "object" ? productOrId?.id : productOrId;
+    const productId =
+      typeof productOrId === "object" ? productOrId?.id : productOrId;
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in to add items to your cart.");
       return;
     }
 
-    const response = await fetch(`http://localhost:3000/api/cart/${productId}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await fetch(
+      `http://localhost:3000/api/cart/${productId}`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
 
     if (response.ok) {
       fetchCart();
@@ -106,72 +110,81 @@ export default function App() {
     }
   };
 
-    // remove a product from the cart
-    const removeFromCart = async (Id) => {
-      const token = localStorage.getItem("token");
-      
-      await fetch(`http://localhost:3000/api/cart/${Id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  // remove a product from the cart
+  const removeFromCart = async (Id) => {
+    const token = localStorage.getItem("token");
+
+    await fetch(`http://localhost:3000/api/cart/${Id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     fetchCart();
   };
 
   const cartTotal = cart.reduce((total, item) => total + item.price, 0);
 
-
   // ── Render ────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
-      <Header
-        cart={cart}
-        currentUser={currentUser}
-        onOpenLogin={() => setShowLogin(true)}
-        onAddProduct={() => setShowForm(true)}
-        onOpenCart={() => setShowCart(true)}
-        onLogout={handleLogout}
-      />
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
+              <Header
+                cart={cart}
+                currentUser={currentUser}
+                onOpenLogin={() => setShowLogin(true)}
+                onAddProduct={() => setShowForm(true)}
+                onOpenCart={() => setShowCart(true)}
+                onLogout={handleLogout}
+              />
 
-      <Hero />
+              <Hero />
 
-      {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onLoginSuccess={handleLoginSuccess}
+              {showLogin && (
+                <LoginModal
+                  onClose={() => setShowLogin(false)}
+                  onLoginSuccess={handleLoginSuccess}
+                />
+              )}
+
+              {showForm && (
+                <AddProductModal
+                  onClose={() => setShowForm(false)}
+                  onProductAdded={fetchProducts}
+                />
+              )}
+
+              <ProductList
+                products={products}
+                onAddToCart={addToCart}
+                onDelete={handleDelete}
+                onSelectProduct={setSelectedProduct}
+              />
+
+              {showCart && (
+                <ShoppingCart
+                  cart={cart}
+                  cartTotal={cartTotal}
+                  onRemove={removeFromCart}
+                  onClose={() => setShowCart(false)}
+                />
+              )}
+
+              {selectedProduct && (
+                <ProductModal
+                  product={selectedProduct}
+                  onClose={() => setSelectedProduct(null)}
+                  onAddToCart={addToCart}
+                />
+              )}
+            </div>
+          }
         />
-      )}
-
-      {showForm && (
-        <AddProductModal
-          onClose={() => setShowForm(false)}
-          onProductAdded={fetchProducts}
-        />
-      )}
-
-      <ProductList
-        products={products}
-        onAddToCart={addToCart}
-        onDelete={handleDelete}
-        onSelectProduct={setSelectedProduct}
-      />
-
-      {showCart && (
-        <ShoppingCart
-          cart={cart}
-          cartTotal={cartTotal}
-          onRemove={removeFromCart}
-          onClose={() => setShowCart(false)}
-        />
-      )}
-
-      {selectedProduct && (
-        <ProductModal
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onAddToCart={addToCart}
-        />
-      )}
-    </div>
+        <Route path="/checkout" element={<CheckoutPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
