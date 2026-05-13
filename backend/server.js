@@ -359,6 +359,75 @@ app.delete("/api/cart/:productId", verifyToken, (req, res) => {
   }
 });
 
+// ── Order routes ───────────────────────────
+// ───────────────────────────────────
+
+// Place an order
+app.post("/api/orders", verifyToken, (req, res) => {
+  const { fullName, address, city, postalCode } = req.body;
+
+  if (!fullName || !address || !city || !postalCode) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const cartItems = db.prepare(`
+      SELECT cart_items.product_id, products.price
+      FROM cart_items
+      JOIN products ON cart_items.product_id = products.id
+      WHERE cart_items.user_id = ?
+    `).all(req.user.userId);
+
+    if (cartItems.length === 0) {
+      return res.status(400).json({ error: "Cart is empty" });
+    }
+
+    const total = cartItems.reduce((sum, item) => sum + item.price, 0);
+
+    const order = db.prepare(`
+      INSERT INTO orders (user_id, total, full_name, address, city, postal_code)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(req.user.userId, total, fullName, address, city, postalCode);
+
+    const insertItem = db.prepare(`
+      INSERT INTO order_items (order_id, product_id, price)
+      VALUES (?, ?, ?)
+    `);
+    for (const item of cartItems) {
+      insertItem.run(order.lastInsertRowid, item.product_id, item.price);
+    }
+
+    // Clear the user's cart after placing the order
+    db.prepare("DELETE FROM cart_items WHERE user_id = ?").run(req.user.userId);
+
+    res.status(201).json({
+      message: "Order placed successfully",
+      orderId: order.lastInsertRowid,
+      total,
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Failed to place order" });
+  }
+});
+
+// Fetch orders for the logged-in user
+app.get("/api/orders", verifyToken, (req, res) => {
+  try {
+    const orders = db
+      .prepare(`
+        SELECT * FROM orders 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC`)
+      .all(req.user.userId);
+
+    res.json(orders);
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
 // ── Start server ───────────────────────────
 // ───────────────────────────────────
 
