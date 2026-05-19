@@ -8,6 +8,8 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   return (
     <div className="bg-white border-b border-gray-200">
@@ -112,6 +114,31 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
                   />
                 </div>
               </div>
+              {/* Error message */}
+              {error && (
+                <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl mt-4 border border-red-100">
+                  {error}
+                </div>
+              )}
+
+              {/* place order button */}
+              <button
+                disabled={loading || cart.length === 0}
+                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-xl transition-colors text-sm"
+              >
+                {loading ? "Placing Order..." : `Place Order — €${cartTotal.toFixed(2)}`}
+              </button>
+
+              {/* Empty cart message */}
+              {cart.length === 0 && (
+                <p className="text-gray-500 text-center mt-3">
+                  Your cart is empty.{" "}
+                  <button 
+                    onClick={() => navigate("/")}
+                    className="text-blue-600 hover:underline"
+                  >Browse products</button>.
+                </p>
+              )}
             </div>
           </div>
           {/* Right column — order summary */}
