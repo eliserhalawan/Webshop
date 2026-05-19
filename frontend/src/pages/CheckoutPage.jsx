@@ -11,6 +11,49 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const handlePlaceOrder = async () => {
+    setError("");
+
+    if (!fullName || !address || !city || !postalCode) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("http://localhost:3000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          full_name: fullName,
+          address,
+          city,
+          postal_code: postalCode,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        onOrderSuccess();
+        navigate("/");
+      } else {
+        setError(data.error || "Failed to place order");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+          
+
   return (
     <div className="bg-white border-b border-gray-200">
       {/* Header */}
@@ -123,6 +166,7 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
 
               {/* place order button */}
               <button
+                onClick={handlePlaceOrder}
                 disabled={loading || cart.length === 0}
                 className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-xl transition-colors text-sm"
               >
