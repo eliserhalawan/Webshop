@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import ProductList from "./components/ProductList";
@@ -7,6 +7,7 @@ import AddProductModal from "./components/AddProductModal";
 import ProductModal from "./components/ProductModal";
 import ShoppingCart from "./components/ShoppingCart";
 import LoginModal from "./components/LoginModal";
+import CheckoutPage from "./pages/CheckoutPage";
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -126,65 +127,72 @@ export default function App() {
 
   // ── Render ────────────────────────────────────────────
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
-              <Header
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
+            <Header
+              cart={cart}
+              currentUser={currentUser}
+              onOpenLogin={() => setShowLogin(true)}
+              onAddProduct={() => setShowForm(true)}
+              onOpenCart={() => setShowCart(true)}
+              onLogout={handleLogout}
+            />
+
+            <Hero />
+
+            {showLogin && (
+              <LoginModal
+                onClose={() => setShowLogin(false)}
+                onLoginSuccess={handleLoginSuccess}
+              />
+            )}
+
+            {showForm && (
+              <AddProductModal
+                onClose={() => setShowForm(false)}
+                onProductAdded={fetchProducts}
+              />
+            )}
+
+            <ProductList
+              products={products}
+              onAddToCart={addToCart}
+              onDelete={handleDelete}
+              onSelectProduct={setSelectedProduct}
+            />
+
+            {showCart && (
+              <ShoppingCart
                 cart={cart}
-                currentUser={currentUser}
-                onOpenLogin={() => setShowLogin(true)}
-                onAddProduct={() => setShowForm(true)}
-                onOpenCart={() => setShowCart(true)}
-                onLogout={handleLogout}
+                cartTotal={cartTotal}
+                onRemove={removeFromCart}
+                onClose={() => setShowCart(false)}
               />
+            )}
 
-              <Hero />
-
-              {showLogin && (
-                <LoginModal
-                  onClose={() => setShowLogin(false)}
-                  onLoginSuccess={handleLoginSuccess}
-                />
-              )}
-
-              {showForm && (
-                <AddProductModal
-                  onClose={() => setShowForm(false)}
-                  onProductAdded={fetchProducts}
-                />
-              )}
-
-              <ProductList
-                products={products}
+            {selectedProduct && (
+              <ProductModal
+                product={selectedProduct}
+                onClose={() => setSelectedProduct(null)}
                 onAddToCart={addToCart}
-                onDelete={handleDelete}
-                onSelectProduct={setSelectedProduct}
               />
-
-              {showCart && (
-                <ShoppingCart
-                  cart={cart}
-                  cartTotal={cartTotal}
-                  onRemove={removeFromCart}
-                  onClose={() => setShowCart(false)}
-                />
-              )}
-
-              {selectedProduct && (
-                <ProductModal
-                  product={selectedProduct}
-                  onClose={() => setSelectedProduct(null)}
-                  onAddToCart={addToCart}
-                />
-              )}
-            </div>
-          }
-        />
-        <Route path="/checkout" element={<CheckoutPage />} />
-      </Routes>
-    </BrowserRouter>
+            )}
+          </div>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <CheckoutPage
+            cart={cart}
+            cartTotal={cartTotal}
+            onOrderSuccess={() => setCart([])}
+          />
+        }
+      />
+    </Routes>
   );
 }

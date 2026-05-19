@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
+  const navigate = useNavigate();
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -70,7 +72,12 @@ export default function ShoppingCart({ cart, cartTotal, onRemove, onClose }) {
                 €{cartTotal.toFixed(2)}
               </p>
             </div>
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors">
+            <button 
+            onClick={() => {
+              onClose();
+              navigate("/checkout");
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors">
               Proceed to Checkout
             </button>
           </div>

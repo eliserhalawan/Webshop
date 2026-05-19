@@ -364,9 +364,9 @@ app.delete("/api/cart/:productId", verifyToken, (req, res) => {
 
 // Place an order
 app.post("/api/orders", verifyToken, (req, res) => {
-  const { fullName, address, city, postalCode } = req.body;
+  const { full_name, address, city, postal_code } = req.body;
 
-  if (!fullName || !address || !city || !postalCode) {
+  if (!full_name || !address || !city || !postal_code) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
@@ -387,7 +387,7 @@ app.post("/api/orders", verifyToken, (req, res) => {
     const order = db.prepare(`
       INSERT INTO orders (user_id, total, full_name, address, city, postal_code)
       VALUES (?, ?, ?, ?, ?, ?)
-    `).run(req.user.userId, total, fullName, address, city, postalCode);
+    `).run(req.user.userId, total, full_name, address, city, postal_code);
 
     const insertItem = db.prepare(`
       INSERT INTO order_items (order_id, product_id, price)
