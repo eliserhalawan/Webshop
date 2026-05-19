@@ -10,6 +10,8 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
   const [postalCode, setPostalCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderId, setOrderId] = useState(null);
 
   const handlePlaceOrder = async () => {
     setError("");
@@ -41,8 +43,9 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
       const data = await response.json();
 
       if (response.ok) {
+        setOrderId(data.orderId);
+        setOrderPlaced(true);
         onOrderSuccess();
-        navigate("/");
       } else {
         setError(data.error || "Failed to place order");
       }
@@ -52,7 +55,46 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
       setLoading(false);
     }
   };
-          
+
+  if (orderPlaced) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 max-w-md w-full text-center">
+          {/* Green checkmark */}
+          <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg
+              className="w-8 h-8 text-green-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Order placed!
+          </h2>
+          <p className="text-gray-500 mb-6">
+            Your order{" "}
+            <span className="font-semibold text-gray-700">#{orderId}</span> has
+            been successfully placed.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border-b border-gray-200">
@@ -170,17 +212,22 @@ export default function CheckoutPage({ cart, cartTotal, onOrderSuccess }) {
                 disabled={loading || cart.length === 0}
                 className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3.5 rounded-xl transition-colors text-sm"
               >
-                {loading ? "Placing Order..." : `Place Order — €${cartTotal.toFixed(2)}`}
+                {loading
+                  ? "Placing Order..."
+                  : `Place Order — €${cartTotal.toFixed(2)}`}
               </button>
 
               {/* Empty cart message */}
               {cart.length === 0 && (
                 <p className="text-gray-500 text-center mt-3">
                   Your cart is empty.{" "}
-                  <button 
+                  <button
                     onClick={() => navigate("/")}
                     className="text-blue-600 hover:underline"
-                  >Browse products</button>.
+                  >
+                    Browse products
+                  </button>
+                  .
                 </p>
               )}
             </div>
